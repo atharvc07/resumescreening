@@ -41,7 +41,7 @@ Remember: Respond with ONLY the JSON object, no additional text.
         for attempt in range(max_retries):
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": self.system_prompt},
                         {"role": "user", "content": user_message}

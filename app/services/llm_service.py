@@ -15,7 +15,10 @@ class LLMService:
             logger.error("GEMINI_API_KEY not found in environment variables")
         
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        try:
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
+        except Exception:
+            self.model = genai.GenerativeModel('gemini-pro')
         
         self.system_prompt = self._load_prompt("prompts/resume_screening.md")
         self.examples = self._load_prompt("prompts/resume_screening_examples.md")

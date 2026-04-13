@@ -9,16 +9,13 @@ logger = logging.getLogger(__name__)
 
 class LLMService:
     def __init__(self):
-        # Configure Gemini
+        # Using gemini-pro for the widest possible compatibility
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             logger.error("GEMINI_API_KEY not found in environment variables")
         
         genai.configure(api_key=api_key)
-        try:
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
-        except Exception:
-            self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-pro')
         
         self.system_prompt = self._load_prompt("prompts/resume_screening.md")
         self.examples = self._load_prompt("prompts/resume_screening_examples.md")
@@ -48,21 +45,26 @@ Now evaluate this resume:
 **Resume:**
 {resume_text}
 
-Remember: Respond with ONLY the JSON object.
+Remember: Respond with ONLY a valid JSON object.
 """
         
         for attempt in range(max_retries):
             try:
-                # Call Gemini
+                # Call Gemini Pro
                 response = self.model.generate_content(
                     prompt,
                     generation_config=genai.types.GenerationConfig(
                         temperature=0.2,
-                        response_mime_type="application/json",
                     )
                 )
                 
                 result_text = response.text.strip()
+                
+                # Manual clean up of result_text if Gemini adds markdown markers
+                if result_text.startswith("```json"):
+                    result_text = result_text[7:-3].strip()
+                elif result_text.startswith("```"):
+                    result_text = result_text[3:-3].strip()
                 
                 # Parse JSON response
                 result = json.loads(result_text)

@@ -31,7 +31,7 @@ services:
   
   worker:
     build: .
-    command: python -m app.worker
+    command: celery -A app.worker.celery_app worker --loglevel=info
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/resume_screening
       - REDIS_URL=redis://redis:6379
